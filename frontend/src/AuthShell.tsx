@@ -35,6 +35,10 @@ export default function AuthShell() {
   const [name, setName] = useState('');
   const [ownerEmail, setOwnerEmail] = useState('');
   const [ownerPassword, setOwnerPassword] = useState('');
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordNotice, setPasswordNotice] = useState('');
 
   async function loadAccount() {
     let account: User;
@@ -118,6 +122,18 @@ export default function AuthShell() {
     localStorage.setItem(SELECTED, id);
   }
 
+  async function changePassword(event: FormEvent) {
+    event.preventDefault(); setPasswordNotice('');
+    const response = await fetch('/api/auth/change-password', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    const result = await response.json();
+    if (!response.ok) { setPasswordNotice(result.error || 'Password change failed'); return; }
+    setCurrentPassword(''); setNewPassword(''); setShowPasswordForm(false);
+    setPasswordNotice('Password changed');
+  }
+
   if (loading) return <div className="min-h-screen grid place-items-center bg-slate-950 text-white">Loading account…</div>;
   if (!user) return <main className="min-h-screen grid place-items-center bg-slate-950 text-white p-4"><form onSubmit={login} className="w-full max-w-sm p-6 space-y-4 rounded-xl border border-slate-700 bg-slate-900">
     <h1 className="text-xl font-semibold">Loom Production · Sign in</h1>
@@ -137,5 +153,5 @@ export default function AuthShell() {
       <button className="rounded bg-white text-black px-4 py-2">Create factory</button>
     </form>
   </div></main>;
-  return <><div className="flex items-center justify-end gap-4 bg-slate-950 text-white px-4 py-1 text-sm"><span>{user.name}{user.role === 'admin' ? ` · ${tenants.find((t) => t.id === selected)?.name || 'Factory'}` : ''}</span>{user.role === 'admin' && <button onClick={() => { setSelected(''); localStorage.removeItem(SELECTED); }}>Switch factory</button>}<button onClick={logout}>Sign out</button></div><App key={selected} /></>;
+  return <><div className="flex items-center justify-end gap-4 bg-slate-950 text-white px-4 py-1 text-sm"><span>{user.name}{user.role === 'admin' ? ` · ${tenants.find((t) => t.id === selected)?.name || 'Factory'}` : ''}</span>{passwordNotice && <span role="status">{passwordNotice}</span>}<button onClick={() => setShowPasswordForm((value) => !value)}>Change password</button>{user.role === 'admin' && <button onClick={() => { setSelected(''); localStorage.removeItem(SELECTED); }}>Switch factory</button>}<button onClick={logout}>Sign out</button></div>{showPasswordForm && <form onSubmit={changePassword} className="flex flex-wrap items-end gap-2 bg-slate-900 text-white px-4 py-3 text-sm"><label>Current password<input type="password" required value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="block p-2 rounded bg-slate-800" /></label><label>New password (12+ characters)<input type="password" minLength={12} required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="block p-2 rounded bg-slate-800" /></label><button className="rounded bg-white text-black px-4 py-2">Save password</button></form>}<App key={selected} /></>;
 }

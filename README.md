@@ -41,5 +41,5 @@ The legacy JSON file is deliberately excluded from Git. To import it, put the ba
 
 - Rotate the service role key if it was shared outside a secure channel. It bypasses RLS and must remain on the server.
 - Owner tenant IDs come from verified Supabase Auth profiles, never from request headers. The `x-tenant-id` header is accepted only for an admin selecting an existing active factory.
-- Admin created owner passwords are temporary; owners should change them in Supabase Auth until an in-app password change flow is added.
+- Admin created owner passwords are temporary. Owners can use **Change password** in the app after signing in.
 - Keep database backups. `tenant_states` stores the full factory data snapshot, and the JSON backup is not in the repository.

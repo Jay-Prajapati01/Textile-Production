@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
-import { supabasePublic } from '../services/supabase';
+import { supabaseAdmin, supabasePublic } from '../services/supabase';
 
 const router = Router();
 
@@ -23,6 +23,18 @@ router.post('/refresh', async (req: AuthenticatedRequest, res: Response) => {
 router.get('/me', authenticate, (req: AuthenticatedRequest, res: Response) => {
   const actor = req.actor!;
   return res.json({ id: actor.id, name: actor.name, email: actor.email, role: actor.role, tenantId: actor.tenantId });
+});
+
+router.post('/change-password', authenticate, async (req: AuthenticatedRequest, res: Response) => {
+  const { currentPassword, newPassword } = req.body || {};
+  if (typeof currentPassword !== 'string' || typeof newPassword !== 'string' || newPassword.length < 12) {
+    return res.status(400).json({ error: 'Current password and a new password of at least 12 characters are required' });
+  }
+  const { error: verifyError } = await supabasePublic.auth.signInWithPassword({ email: req.actor!.email, password: currentPassword });
+  if (verifyError) return res.status(401).json({ error: 'Current password is incorrect' });
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(req.actor!.id, { password: newPassword });
+  if (error) return res.status(500).json({ error: 'Password could not be changed' });
+  return res.json({ success: true });
 });
 
 router.post('/logout', (_req, res) => res.json({ success: true }));
