@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Apply saved theme before first paint to avoid flash
+      try {
+        if (localStorage.getItem('theme') === 'light') {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    </script>
+    <title>Textile Loom Production Management System</title>
+    <meta name="description" content="Comprehensive industrial loom production management system with automated calculations, shift entries, worker wivar assignment, number-line tracking, reports, and Excel export." />
+    <meta property="og:title" content="Textile Loom Production Management System" />
+    <meta property="og:description" content="Comprehensive industrial loom production management system with automated calculations, shift entries, worker wivar assignment, number-line tracking, reports, and Excel export." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="apple-touch-icon" href="/logo.svg" />
+    <meta name="theme-color" content="#101013" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

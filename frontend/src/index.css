@@ -1,0 +1,457 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ---------- Theme toggler (View Transitions API) ---------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html[data-magicui-theme-vt="active"]::view-transition-group(root) {
+  animation-duration: var(--magicui-theme-toggle-vt-duration);
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* ---------- Calendar popover animation ---------- */
+@keyframes calendar-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.calendar-pop {
+  animation: calendar-pop 0.16s ease-out;
+  transform-origin: top center;
+}
+
+/* ============================================================
+   LIGHT THEME — Tailwind v4 utilities read var(--color-*),
+   so remapping the palette under html:not(.dark) repaints the
+   whole app with zero component changes.
+   ============================================================ */
+html:not(.dark) {
+  color-scheme: light;
+
+  /* Neutrals: flip the dark slate ramp to a light one */
+  --color-slate-50: #0f172a;
+  --color-slate-100: #1e293b;
+  --color-slate-200: #334155;
+  --color-slate-300: #475569;
+  --color-slate-400: #64748b;
+  --color-slate-500: #94a3b8;
+  --color-slate-600: #a2b0c2;
+  --color-slate-700: #cbd5e1;
+  --color-slate-800: #e8eef6;
+  --color-slate-900: #ffffff;
+  --color-slate-950: #f4f7fb;
+
+  /* ---- Chromatic palettes -> pure black / white / gray ---- */
+  /* Solid buttons */
+  --color-emerald-500: #000000;
+  --color-emerald-600: #000000;
+  --color-emerald-700: #1a1a1a;
+  /* Soft chips / backgrounds */
+  --color-emerald-950: #f5f5f5;
+  --color-emerald-900: #eeeeee;
+  --color-emerald-800: #d4d4d4;
+  /* Text / icons on light */
+  --color-emerald-400: #000000;
+  --color-emerald-300: #1a1a1a;
+
+  /* Blue */
+  --color-blue-500: #000000;
+  --color-blue-600: #000000;
+  --color-blue-700: #1a1a1a;
+  --color-blue-950: #f5f5f5;
+  --color-blue-900: #eeeeee;
+  --color-blue-800: #d4d4d4;
+  --color-blue-400: #000000;
+  --color-blue-300: #1a1a1a;
+
+  /* Red */
+  --color-red-500: #000000;
+  --color-red-600: #000000;
+  --color-red-700: #1a1a1a;
+  --color-red-950: #f5f5f5;
+  --color-red-900: #eeeeee;
+  --color-red-800: #d4d4d4;
+  --color-red-400: #000000;
+  --color-red-300: #1a1a1a;
+
+  /* Amber */
+  --color-amber-500: #000000;
+  --color-amber-600: #000000;
+  --color-amber-700: #1a1a1a;
+  --color-amber-950: #f5f5f5;
+  --color-amber-900: #eeeeee;
+  --color-amber-800: #d4d4d4;
+  --color-amber-400: #000000;
+  --color-amber-300: #1a1a1a;
+
+  /* Orange */
+  --color-orange-500: #000000;
+  --color-orange-600: #000000;
+  --color-orange-700: #1a1a1a;
+  --color-orange-950: #f5f5f5;
+  --color-orange-900: #eeeeee;
+  --color-orange-800: #d4d4d4;
+  --color-orange-400: #000000;
+  --color-orange-300: #1a1a1a;
+
+  /* Purple */
+  --color-purple-500: #000000;
+  --color-purple-600: #000000;
+  --color-purple-700: #1a1a1a;
+  --color-purple-950: #f5f5f5;
+  --color-purple-900: #eeeeee;
+  --color-purple-800: #d4d4d4;
+  --color-purple-400: #000000;
+  --color-purple-300: #1a1a1a;
+
+  /* Indigo */
+  --color-indigo-500: #000000;
+  --color-indigo-600: #000000;
+  --color-indigo-700: #1a1a1a;
+  --color-indigo-950: #f5f5f5;
+  --color-indigo-900: #eeeeee;
+  --color-indigo-800: #d4d4d4;
+  --color-indigo-400: #000000;
+  --color-indigo-300: #1a1a1a;
+
+  /* Sky */
+  --color-sky-500: #000000;
+  --color-sky-600: #000000;
+  --color-sky-700: #1a1a1a;
+  --color-sky-950: #f5f5f5;
+  --color-sky-900: #eeeeee;
+  --color-sky-800: #d4d4d4;
+  --color-sky-400: #000000;
+  --color-sky-300: #1a1a1a;
+
+  /* Teal */
+  --color-teal-500: #000000;
+  --color-teal-600: #000000;
+  --color-teal-700: #1a1a1a;
+  --color-teal-950: #f5f5f5;
+  --color-teal-900: #eeeeee;
+  --color-teal-800: #d4d4d4;
+  --color-teal-400: #000000;
+  --color-teal-300: #1a1a1a;
+
+  /* Misc hues used sparingly */
+  --color-green-400: #000000;
+  --color-green-500: #000000;
+  --color-green-600: #000000;
+  --color-yellow-400: #000000;
+  --color-lime-400: #000000;
+  --color-cyan-400: #000000;
+  --color-cyan-300: #000000;
+  --color-violet-400: #000000;
+  --color-fuchsia-400: #000000;
+  --color-pink-400: #000000;
+  --color-rose-400: #000000;
+}
+
+/* White heading/table text must flip to ink on light surfaces … */
+html:not(.dark) .text-white {
+  color: #0f172a;
+}
+
+/* ============================================================
+   BASE TYPOGRAPHY — Tailwind defaults (best for this project).
+   16px root, default text-xs (12px) / text-sm (14px) scale kept
+   as designed: badges, table headers & formula captions are
+   intentionally compact; body copy stays 14–16px readable.
+   ============================================================ */
+html {
+  font-size: 16px;
+}
+
+body {
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ============================================================
+   RESPONSIVE FOUNDATION — whole app
+   ============================================================ */
+html,
+body {
+  max-width: 100%;
+}
+
+body {
+  overflow-x: clip;
+}
+
+#root {
+  min-height: 100vh;
+  max-width: 100%;
+}
+
+/* Media & tables never break the layout */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+/* Smooth horizontal scroll for wide tables on small screens */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Table headers and timestamp/date cells never wrap mid-value — wide tables
+   scroll horizontally instead of breaking dates across lines. */
+thead th {
+  white-space: nowrap;
+}
+td time,
+td .tabular-nums {
+  white-space: nowrap;
+}
+
+/* Narrow phones: tighten card padding set via p-5 utilities */
+@media (max-width: 380px) {
+  ::placeholder {
+    font-size: 0.85rem;
+  }
+}
+
+/* ============================================================
+   MONOCHROME THEME — DARK (default).
+   Every chromatic Tailwind palette is remapped to pure
+   black / white / neutral gray, so ALL features (dashboard,
+   entries, reports, modals, badges, charts) render B&W with
+   zero component changes.
+   ============================================================ */
+:root,
+html.dark {
+  color-scheme: dark;
+
+  /* Emerald -> monochrome */
+  --color-emerald-50: #fafafa;
+  --color-emerald-100: #f5f5f5;
+  --color-emerald-200: #e7e7e7;
+  --color-emerald-300: #ffffff;
+  --color-emerald-400: #ffffff;
+  --color-emerald-500: #ffffff;
+  --color-emerald-600: #ffffff;
+  --color-emerald-700: #e7e7e7;
+  --color-emerald-800: #3f3f3f;
+  --color-emerald-900: #1c1c1c;
+  --color-emerald-950: #111111;
+
+  /* Blue -> monochrome */
+  --color-blue-50: #fafafa;
+  --color-blue-100: #f5f5f5;
+  --color-blue-200: #e7e7e7;
+  --color-blue-300: #ffffff;
+  --color-blue-400: #ffffff;
+  --color-blue-500: #ffffff;
+  --color-blue-600: #ffffff;
+  --color-blue-700: #e7e7e7;
+  --color-blue-800: #3f3f3f;
+  --color-blue-900: #1c1c1c;
+  --color-blue-950: #111111;
+
+  /* Red (keep readable but grayscale — errors become white on dark) */
+  --color-red-50: #fafafa;
+  --color-red-100: #f5f5f5;
+  --color-red-200: #e7e7e7;
+  --color-red-300: #ffffff;
+  --color-red-400: #ffffff;
+  --color-red-500: #ffffff;
+  --color-red-600: #ffffff;
+  --color-red-700: #e7e7e7;
+  --color-red-800: #525252;
+  --color-red-900: #262626;
+  --color-red-950: #141414;
+
+  /* Amber -> monochrome */
+  --color-amber-50: #fafafa;
+  --color-amber-100: #f5f5f5;
+  --color-amber-200: #e7e7e7;
+  --color-amber-300: #ffffff;
+  --color-amber-400: #ffffff;
+  --color-amber-500: #ffffff;
+  --color-amber-600: #ffffff;
+  --color-amber-700: #e7e7e7;
+  --color-amber-800: #3f3f3f;
+  --color-amber-900: #1c1c1c;
+  --color-amber-950: #111111;
+
+  /* Orange -> monochrome */
+  --color-orange-50: #fafafa;
+  --color-orange-100: #f5f5f5;
+  --color-orange-200: #e7e7e7;
+  --color-orange-300: #ffffff;
+  --color-orange-400: #ffffff;
+  --color-orange-500: #ffffff;
+  --color-orange-600: #ffffff;
+  --color-orange-700: #e7e7e7;
+  --color-orange-800: #3f3f3f;
+  --color-orange-900: #1c1c1c;
+  --color-orange-950: #111111;
+
+  /* Purple -> monochrome */
+  --color-purple-50: #fafafa;
+  --color-purple-100: #f5f5f5;
+  --color-purple-200: #e7e7e7;
+  --color-purple-300: #ffffff;
+  --color-purple-400: #ffffff;
+  --color-purple-500: #ffffff;
+  --color-purple-600: #ffffff;
+  --color-purple-700: #e7e7e7;
+  --color-purple-800: #3f3f3f;
+  --color-purple-900: #1c1c1c;
+  --color-purple-950: #111111;
+
+  /* Indigo -> monochrome */
+  --color-indigo-50: #fafafa;
+  --color-indigo-100: #f5f5f5;
+  --color-indigo-200: #e7e7e7;
+  --color-indigo-300: #ffffff;
+  --color-indigo-400: #ffffff;
+  --color-indigo-500: #ffffff;
+  --color-indigo-600: #ffffff;
+  --color-indigo-700: #e7e7e7;
+  --color-indigo-800: #3f3f3f;
+  --color-indigo-900: #1c1c1c;
+  --color-indigo-950: #111111;
+
+  /* Sky -> monochrome */
+  --color-sky-50: #fafafa;
+  --color-sky-100: #f5f5f5;
+  --color-sky-200: #e7e7e7;
+  --color-sky-300: #ffffff;
+  --color-sky-400: #ffffff;
+  --color-sky-500: #ffffff;
+  --color-sky-600: #ffffff;
+  --color-sky-700: #e7e7e7;
+  --color-sky-800: #3f3f3f;
+  --color-sky-900: #1c1c1c;
+  --color-sky-950: #111111;
+
+  /* Teal -> monochrome */
+  --color-teal-50: #fafafa;
+  --color-teal-100: #f5f5f5;
+  --color-teal-200: #e7e7e7;
+  --color-teal-300: #ffffff;
+  --color-teal-400: #ffffff;
+  --color-teal-500: #ffffff;
+  --color-teal-600: #ffffff;
+  --color-teal-700: #e7e7e7;
+  --color-teal-800: #3f3f3f;
+  --color-teal-900: #1c1c1c;
+  --color-teal-950: #111111;
+
+  /* Green / yellow / lime / cyan / violet / fuchsia / pink / rose
+     (used sparingly) -> monochrome too */
+  --color-green-300: #ffffff;
+  --color-green-400: #ffffff;
+  --color-green-500: #ffffff;
+  --color-green-600: #ffffff;
+  --color-green-800: #3f3f3f;
+  --color-green-900: #1c1c1c;
+  --color-green-950: #111111;
+  --color-yellow-300: #ffffff;
+  --color-yellow-400: #ffffff;
+  --color-yellow-800: #3f3f3f;
+  --color-yellow-900: #1c1c1c;
+  --color-yellow-950: #111111;
+  --color-lime-400: #ffffff;
+  --color-cyan-400: #ffffff;
+  --color-cyan-300: #ffffff;
+  --color-violet-400: #ffffff;
+  --color-fuchsia-400: #ffffff;
+  --color-pink-400: #ffffff;
+  --color-rose-400: #ffffff;
+}
+
+/* Solid action buttons are now white in dark mode — force
+   their label/icon color to black so text stays readable. */
+html.dark .bg-emerald-500,
+html.dark .bg-emerald-600,
+html.dark .bg-blue-500,
+html.dark .bg-blue-600,
+html.dark .bg-indigo-600,
+html.dark .bg-red-500,
+html.dark .bg-red-600,
+html.dark .bg-amber-500,
+html.dark .bg-amber-600,
+html.dark .bg-orange-500,
+html.dark .bg-orange-600,
+html.dark .bg-sky-600,
+html.dark .bg-teal-600,
+html.dark .bg-purple-600 {
+  color: #0a0a0a !important;
+}
+html.dark .bg-emerald-500 *,
+html.dark .bg-emerald-600 *,
+html.dark .bg-blue-500 *,
+html.dark .bg-blue-600 *,
+html.dark .bg-indigo-600 *,
+html.dark .bg-red-500 *,
+html.dark .bg-red-600 * {
+  color: #0a0a0a !important;
+}
+
+/* Focus rings / borders that referenced accent colors -> neutral */
+html.dark *:focus {
+  --tw-ring-color: #ffffff !important;
+}
+html.dark .focus\:border-emerald-500:focus,
+html.dark .focus\:border-emerald-400:focus {
+  border-color: #ffffff !important;
+}
+
+/* Selection becomes black-on-white to match the scheme */
+html.dark ::selection {
+  background: #ffffff;
+  color: #000000;
+}
+
+/* … except white text on solid action colors (buttons/badges). */
+html:not(.dark) .text-white:is(
+  [class*="bg-emerald-500"],
+  [class*="bg-emerald-600"],
+  [class*="bg-emerald-700"],
+  [class*="bg-blue-500"],
+  [class*="bg-blue-600"],
+  [class*="bg-blue-700"],
+  [class*="bg-indigo-600"],
+  [class*="bg-red-500"],
+  [class*="bg-red-600"],
+  [class*="bg-red-700"],
+  [class*="bg-amber-500"],
+  [class*="bg-amber-600"],
+  [class*="bg-orange-500"],
+  [class*="bg-orange-600"],
+  [class*="bg-sky-600"],
+  [class*="bg-teal-600"],
+  [class*="bg-purple-600"]
+) {
+  color: #fff;
+}
+
+/* hover:text-white utilities sit on slate chips — flip them too */
+html:not(.dark) [class*="hover:text-white"]:hover {
+  color: #0f172a;
+}
