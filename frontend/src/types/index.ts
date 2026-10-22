@@ -6,6 +6,8 @@ export interface User {
   email: string;
   role: Role;
   tenantId?: string | null;
+  companyName?: string;
+  tenantActive?: boolean;
 }
 
 export interface Loom {

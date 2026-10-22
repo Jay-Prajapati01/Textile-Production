@@ -20,9 +20,19 @@ router.post('/refresh', async (req: AuthenticatedRequest, res: Response) => {
   return res.json({ token: data.session.access_token, refreshToken: data.session.refresh_token });
 });
 
-router.get('/me', authenticate, (req: AuthenticatedRequest, res: Response) => {
+router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   const actor = req.actor!;
-  return res.json({ id: actor.id, name: actor.name, email: actor.email, role: actor.role, tenantId: actor.tenantId });
+  if (actor.role === 'admin') {
+    return res.json({ id: actor.id, name: actor.name, email: actor.email, role: actor.role, tenantId: null });
+  }
+  try {
+    const { data, error } = await supabaseAdmin.from('tenants').select('id,name,is_active').eq('id', actor.tenantId).single();
+    if (error || !data) return res.status(403).json({ error: 'Your factory assignment could not be found' });
+    return res.json({ id: actor.id, name: actor.name, email: actor.email, role: actor.role,
+      tenantId: data.id, companyName: data.name, tenantActive: data.is_active });
+  } catch {
+    return res.status(503).json({ error: 'Factory account could not be verified' });
+  }
 });
 
 router.post('/change-password', authenticate, async (req: AuthenticatedRequest, res: Response) => {

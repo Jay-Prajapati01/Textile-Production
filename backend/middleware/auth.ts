@@ -13,6 +13,12 @@ export async function authenticate(req: AuthenticatedRequest, res: Response, nex
   const { data: profile, error } = await supabaseAdmin.from('profiles')
     .select('role,tenant_id,name').eq('id', userData.user.id).single();
   if (error || !profile) return res.status(403).json({ error: 'No account profile' });
+  if (profile.role !== 'admin' && profile.role !== 'factory_owner') {
+    return res.status(403).json({ error: 'Account role is not configured' });
+  }
+  if ((profile.role === 'factory_owner' && !profile.tenant_id) || (profile.role === 'admin' && profile.tenant_id)) {
+    return res.status(403).json({ error: 'Account factory assignment is invalid' });
+  }
   req.actor = {
     id: userData.user.id,
     email: userData.user.email || '',
