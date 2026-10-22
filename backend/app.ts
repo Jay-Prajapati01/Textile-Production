@@ -23,6 +23,21 @@ export const createApp = async (): Promise<Express> => {
   const app = express();
 
   app.use(express.json());
+  const corsOrigins = new Set((process.env.CORS_ORIGINS || '').split(',').map((origin) => origin.trim()).filter(Boolean));
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const origin = req.header('origin');
+    if (origin && corsOrigins.has(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Vary', 'Origin');
+      res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, x-tenant-id');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Max-Age', '600');
+    }
+    if (req.method === 'OPTIONS') return res.sendStatus(origin && corsOrigins.has(origin) ? 204 : 403);
+    next();
+  });
+
+  app.get('/healthz', (_req, res) => res.status(200).json({ status: 'ok' }));
 
   app.use('/api/auth', authRoutes);
   app.use('/api/admin', authenticate, adminRoutes);
@@ -68,17 +83,19 @@ export const createApp = async (): Promise<Express> => {
     res.status(404).json({ error: 'Not found' });
   });
 
-  if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.resolve('dist')));
-    app.get('*', (_req: Request, res: Response) => {
-      res.sendFile(path.resolve('dist', 'index.html'));
-    });
-  } else {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
+  if (process.env.SERVE_FRONTEND !== 'false') {
+    if (process.env.NODE_ENV === 'production') {
+      app.use(express.static(path.resolve('dist')));
+      app.get('*', (_req: Request, res: Response) => {
+        res.sendFile(path.resolve('dist', 'index.html'));
+      });
+    } else {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+    }
   }
 
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

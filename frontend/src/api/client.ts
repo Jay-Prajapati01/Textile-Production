@@ -15,6 +15,9 @@ import {
 } from '../types';
 import { postSync } from '../utils/sync';
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+export const apiUrl = (path: string) => `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
+
 let currentUser: User | null = null;
 
 export function setCurrentUser(user: User) {
@@ -26,6 +29,11 @@ export function getCurrentUser(): User {
   return currentUser;
 }
 
+const apiFetch: typeof fetch = (input, init) => {
+  if (typeof input === 'string' && input.startsWith('/api/')) return fetch(apiUrl(input), init);
+  return fetch(input, init);
+};
+
 const getHeaders = () => ({
   'Content-Type': 'application/json',
   'Authorization': `Bearer ${localStorage.getItem('textile.accessToken') || ''}`,
@@ -35,7 +43,7 @@ const getHeaders = () => ({
 export const api = {
   // Auth
   async login(email: string, password: string):Promise<{ token: string; refreshToken: string }> {
-    const res = await fetch('/api/auth/login', {
+    const res = await apiFetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -49,20 +57,20 @@ export const api = {
   },
 
   async getMe(): Promise<User> {
-    const res = await fetch('/api/auth/me', { headers: getHeaders() });
+    const res = await apiFetch('/api/auth/me', { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch user');
     return res.json();
   },
 
   // Looms
   async getLooms(): Promise<Loom[]> {
-    const res = await fetch('/api/looms', { headers: getHeaders() });
+    const res = await apiFetch('/api/looms', { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch looms');
     return res.json();
   },
 
   async createLoom(loom: Partial<Loom>): Promise<Loom> {
-    const res = await fetch('/api/looms', {
+    const res = await apiFetch('/api/looms', {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(loom),
@@ -79,7 +87,7 @@ export const api = {
   },
 
   async updateLoom(id: string, updates: Partial<Loom>): Promise<Loom> {
-    const res = await fetch(`/api/looms/${id}`, {
+    const res = await apiFetch(`/api/looms/${id}`, {
       method: 'PATCH',
       headers: getHeaders(),
       body: JSON.stringify(updates),
@@ -93,13 +101,13 @@ export const api = {
 
   // Workers
   async getWorkers(): Promise<Worker[]> {
-    const res = await fetch('/api/workers', { headers: getHeaders() });
+    const res = await apiFetch('/api/workers', { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch workers');
     return res.json();
   },
 
   async createWorker(worker: Partial<Worker>): Promise<Worker> {
-    const res = await fetch('/api/workers', {
+    const res = await apiFetch('/api/workers', {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(worker),
@@ -111,7 +119,7 @@ export const api = {
   },
 
   async updateWorker(id: string, updates: Partial<Worker>): Promise<Worker> {
-    const res = await fetch(`/api/workers/${id}`, {
+    const res = await apiFetch(`/api/workers/${id}`, {
       method: 'PATCH',
       headers: getHeaders(),
       body: JSON.stringify(updates),
@@ -124,13 +132,13 @@ export const api = {
 
   // Number Lines
   async getNumberLines(): Promise<NumberLine[]> {
-    const res = await fetch('/api/number-lines', { headers: getHeaders() });
+    const res = await apiFetch('/api/number-lines', { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch number lines');
     return res.json();
   },
 
   async createNumberLine(name: string): Promise<NumberLine> {
-    const res = await fetch('/api/number-lines', {
+    const res = await apiFetch('/api/number-lines', {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ name }),
@@ -142,7 +150,7 @@ export const api = {
   },
 
   async updateNumberLine(id: string, updates: Partial<NumberLine>): Promise<NumberLine> {
-    const res = await fetch(`/api/number-lines/${id}`, {
+    const res = await apiFetch(`/api/number-lines/${id}`, {
       method: 'PATCH',
       headers: getHeaders(),
       body: JSON.stringify(updates),
@@ -155,13 +163,13 @@ export const api = {
 
   // Settings
   async getSettings(): Promise<ProductionSettings> {
-    const res = await fetch('/api/settings', { headers: getHeaders() });
+    const res = await apiFetch('/api/settings', { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch settings');
     return res.json();
   },
 
   async updateSettings(settings: Partial<ProductionSettings>): Promise<ProductionSettings> {
-    const res = await fetch('/api/settings', {
+    const res = await apiFetch('/api/settings', {
       method: 'PATCH',
       headers: getHeaders(),
       body: JSON.stringify(settings),
@@ -175,20 +183,20 @@ export const api = {
 
   // Production Days
   async getProductionDaysList(): Promise<ProductionDay[]> {
-    const res = await fetch('/api/production-days', { headers: getHeaders() });
+    const res = await apiFetch('/api/production-days', { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch production days list');
     return res.json();
   },
 
   async getDailySummary(date: string): Promise<DailySummary> {
-    const res = await fetch(`/api/production-days?date=${date}`, { headers: getHeaders() });
+    const res = await apiFetch(`/api/production-days?date=${date}`, { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch daily summary');
     return res.json();
   },
 
   // Create the production day if missing (auto-applies default worker roster)
   async ensureProductionDay(date: string): Promise<DailySummary> {
-    const res = await fetch('/api/production-days/ensure', {
+    const res = await apiFetch('/api/production-days/ensure', {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ date }),
@@ -204,7 +212,7 @@ export const api = {
     date: string,
     productions: { loom_id: string; shift_a: number; shift_b: number }[]
   ): Promise<DailySummary> {
-    const res = await fetch('/api/production-days', {
+    const res = await apiFetch('/api/production-days', {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ date, productions }),
@@ -219,7 +227,7 @@ export const api = {
   },
 
   async completeProductionDay(id: string): Promise<DailySummary> {
-    const res = await fetch(`/api/production-days/${id}/complete`, {
+    const res = await apiFetch(`/api/production-days/${id}/complete`, {
       method: 'POST',
       headers: getHeaders(),
     });
@@ -230,7 +238,7 @@ export const api = {
   },
 
   async lockProductionDay(id: string): Promise<DailySummary> {
-    const res = await fetch(`/api/production-days/${id}/lock`, {
+    const res = await apiFetch(`/api/production-days/${id}/lock`, {
       method: 'POST',
       headers: getHeaders(),
     });
@@ -244,7 +252,7 @@ export const api = {
   },
 
   async unlockProductionDay(id: string): Promise<DailySummary> {
-    const res = await fetch(`/api/production-days/${id}/unlock`, {
+    const res = await apiFetch(`/api/production-days/${id}/unlock`, {
       method: 'POST',
       headers: getHeaders(),
     });
@@ -267,7 +275,7 @@ export const api = {
       shift_b_remark?: string;
     }[]
   ): Promise<DailySummary> {
-    const res = await fetch(`/api/production-days/${dayId}/workers`, {
+    const res = await apiFetch(`/api/production-days/${dayId}/workers`, {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify({ entries }),
@@ -284,13 +292,13 @@ export const api = {
 
   // Default worker roster (date-independent, auto-applied to new days)
   async getDefaultAssignments(): Promise<DefaultAssignment[]> {
-    const res = await fetch('/api/default-assignments', { headers: getHeaders() });
+    const res = await apiFetch('/api/default-assignments', { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch default assignments');
     return res.json();
   },
 
   async saveDefaultAssignments(assignments: DefaultAssignment[]): Promise<DefaultAssignment[]> {
-    const res = await fetch('/api/default-assignments', {
+    const res = await apiFetch('/api/default-assignments', {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify({ assignments }),
@@ -306,7 +314,7 @@ export const api = {
 
   // Monthly Report
   async getMonthlySummary(year: number, month: number): Promise<MonthlySummary> {
-    const res = await fetch(`/api/reports/monthly?year=${year}&month=${month}`, {
+    const res = await apiFetch(`/api/reports/monthly?year=${year}&month=${month}`, {
       headers: getHeaders(),
     });
     if (!res.ok) throw new Error('Failed to fetch monthly summary');
@@ -315,27 +323,27 @@ export const api = {
 
   // Audit Logs
   async getAuditLogs(): Promise<AuditLog[]> {
-    const res = await fetch('/api/audit-logs', { headers: getHeaders() });
+    const res = await apiFetch('/api/audit-logs', { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch audit logs');
     return res.json();
   },
 
   // Machines (Entry dropdown source)
   async getMachines(): Promise<MachineOption[]> {
-    const res = await fetch('/api/machines', { headers: getHeaders() });
+    const res = await apiFetch('/api/machines', { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch machines');
     return res.json();
   },
 
   // Production entries
   async getEntries(): Promise<SubmittedEntry[]> {
-    const res = await fetch('/api/entries', { headers: getHeaders() });
+    const res = await apiFetch('/api/entries', { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch entries');
     return res.json();
   },
 
   async createEntry(entry: Omit<SubmittedEntry, 'id' | 'submittedAt' | 'entryType'>): Promise<SubmittedEntry> {
-    const res = await fetch('/api/entries', {
+    const res = await apiFetch('/api/entries', {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(entry),
@@ -351,13 +359,13 @@ export const api = {
   },
 
   async getRolledOffEntries(): Promise<RolledOffEntry[]> {
-    const res = await fetch('/api/rolled-off', { headers: getHeaders() });
+    const res = await apiFetch('/api/rolled-off', { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch rolled off entries');
     return res.json();
   },
 
   async createRolledOffEntry(entry: Omit<RolledOffEntry, 'id' | 'submittedAt' | 'entryType'>): Promise<RolledOffEntry> {
-    const res = await fetch('/api/rolled-off', {
+    const res = await apiFetch('/api/rolled-off', {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(entry),
@@ -373,14 +381,14 @@ export const api = {
 
   // Range report (server-aggregated, settings-consistent)
   async getRangeSummary(from: string, to: string): Promise<MonthlySummary> {
-    const res = await fetch(`/api/reports/range?from=${from}&to=${to}`, { headers: getHeaders() });
+    const res = await apiFetch(`/api/reports/range?from=${from}&to=${to}`, { headers: getHeaders() });
     if (!res.ok) throw new Error('Failed to fetch range summary');
     return res.json();
   },
 
   // Export Excel
   async exportExcel(payload: { type: 'daily' | 'monthly' | 'range'; date?: string; year?: number; month?: number; fromDate?: string; toDate?: string }): Promise<Blob> {
-    const res = await fetch('/api/reports/export-excel', {
+    const res = await apiFetch('/api/reports/export-excel', {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(payload),

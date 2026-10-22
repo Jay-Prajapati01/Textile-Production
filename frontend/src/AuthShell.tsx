@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { createClient, RealtimeChannel } from '@supabase/supabase-js';
 import App from './App';
-import { api, setCurrentUser } from './api/client';
+import { api, apiUrl, setCurrentUser } from './api/client';
 import { User } from './types';
 import { postSync } from './utils/sync';
 import { AdminPortal } from './components/AdminPortal';
@@ -14,7 +14,7 @@ const SELECTED = 'textile.selectedTenant';
 async function refreshSession() {
   const refreshToken = localStorage.getItem(REFRESH);
   if (!refreshToken) throw new Error('Please sign in');
-  const response = await fetch('/api/auth/refresh', {
+  const response = await fetch(apiUrl('/api/auth/refresh'), {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refreshToken }),
   });
   if (!response.ok) throw new Error('Session expired');
@@ -45,7 +45,7 @@ export default function AuthShell() {
     setCurrentUser(account);
     setUser(account);
     if (account.role === 'admin') {
-      const response = await fetch('/api/admin/tenants', { headers: { Authorization: `Bearer ${localStorage.getItem(TOKEN)}` } });
+      const response = await fetch(apiUrl('/api/admin/tenants'), { headers: { Authorization: `Bearer ${localStorage.getItem(TOKEN)}` } });
       if (!response.ok) throw new Error('Could not load factories');
       const list: Tenant[] = await response.json();
       setTenants(list);
@@ -110,7 +110,7 @@ export default function AuthShell() {
 
   async function changePassword(event: FormEvent) {
     event.preventDefault(); setPasswordNotice('');
-    const response = await fetch('/api/auth/change-password', {
+    const response = await fetch(apiUrl('/api/auth/change-password'), {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
       body: JSON.stringify({ currentPassword, newPassword }),
     });

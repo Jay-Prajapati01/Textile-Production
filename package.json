@@ -3,27 +3,26 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.12.0 <25"
+  },
   "scripts": {
-    "postinstall": "prisma generate",
     "dev": "tsx backend/index.ts",
     "build": "vite build",
     "start": "tsx backend/index.ts",
     "lint": "tsc --noEmit",
-    "db:generate": "prisma generate",
     "db:check": "tsx backend/scripts/check-db.ts",
     "db:bootstrap-admin": "tsx backend/scripts/bootstrap-admin.ts",
     "db:import-json": "tsx backend/scripts/import-json.ts",
     "test:realtime": "tsx backend/scripts/test-realtime.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.3",
     "@supabase/supabase-js": "^2.117.3",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.1.1",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "lucide-react": "^0.546.0",
-    "pg": "^8.23.1",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "vite": "^8.3.0",
@@ -32,10 +31,8 @@
   "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/node": "^22.14.0",
-    "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "prisma": "^6.19.3",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.21.0",
     "typescript": "^7.0.2"

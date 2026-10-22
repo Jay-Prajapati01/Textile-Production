@@ -1,6 +1,7 @@
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from 'react';
 import { Activity, Building2, Factory, Gauge, Layers3, Plus, RefreshCw, Search, Users, X } from 'lucide-react';
 import { getTodayString, toLocalDateString } from '../utils/date';
+import { apiUrl } from '../api/client';
 
 interface Tenant {
   id: string; name: string; email: string; is_active: boolean; created_at?: string;
@@ -42,7 +43,7 @@ export function AdminPortal({ accessToken, tenants, onTenantsChange, onSelectFac
   async function loadOverview() {
     setLoading(true); setError('');
     try {
-      const response = await fetch('/api/admin/overview?from=' + from + '&to=' + to, { headers: headers(accessToken) });
+      const response = await fetch(apiUrl('/api/admin/overview?from=' + from + '&to=' + to), { headers: headers(accessToken) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Could not load analytics');
       setOverview(data); onTenantsChange(data.factories);
@@ -50,7 +51,7 @@ export function AdminPortal({ accessToken, tenants, onTenantsChange, onSelectFac
     finally { setLoading(false); }
   }
   async function loadTenants() {
-    const response = await fetch('/api/admin/tenants', { headers: headers(accessToken) });
+    const response = await fetch(apiUrl('/api/admin/tenants'), { headers: headers(accessToken) });
     if (!response.ok) throw new Error('Could not load factories');
     onTenantsChange(await response.json());
   }
@@ -58,7 +59,7 @@ export function AdminPortal({ accessToken, tenants, onTenantsChange, onSelectFac
 
   async function createFactory(event: FormEvent) {
     event.preventDefault(); setError('');
-    const response = await fetch('/api/admin/tenants', { method: 'POST', headers: headers(accessToken), body: JSON.stringify({ name, email, password }) });
+    const response = await fetch(apiUrl('/api/admin/tenants'), { method: 'POST', headers: headers(accessToken), body: JSON.stringify({ name, email, password }) });
     const result = await response.json();
     if (!response.ok) { setError(result.error || 'Could not create factory'); return; }
     setName(''); setEmail(''); setPassword(''); setShowCreate(false);
@@ -66,7 +67,7 @@ export function AdminPortal({ accessToken, tenants, onTenantsChange, onSelectFac
   }
   async function updateFactory(id: string, updates: Partial<Tenant>) {
     setError('');
-    const response = await fetch('/api/admin/tenants/' + id, { method: 'PATCH', headers: headers(accessToken), body: JSON.stringify(updates) });
+    const response = await fetch(apiUrl('/api/admin/tenants/' + id), { method: 'PATCH', headers: headers(accessToken), body: JSON.stringify(updates) });
     const result = await response.json();
     if (!response.ok) { setError(result.error || 'Could not update factory'); return; }
     setEditing(null); await loadTenants(); await loadOverview();

@@ -8,7 +8,6 @@ React frontend and Node.js/Express backend for loom setup, worker assignments, d
 frontend/           React, Tailwind, Vite entry and public assets
 backend/            Express routes, auth, data services and scripts
 backend/sql/        Supabase schema and RLS migration
-prisma/             Prisma model for tenants, profiles and tenant state
 shared/             Reserved for shared contracts
 data/               Local legacy backup (gitignored)
 ```
@@ -17,7 +16,7 @@ The existing calculation and report services read one coherent `tenant_states.st
 
 ## Setup
 
-1. Install Node.js 20 or newer and run `npm ci`.
+1. Install Node.js 22.12 or newer (below 25) and run `npm ci`.
 2. Copy `.env.example` to `.env` and set the Supabase URL, publishable key, and server only service role key. Never put the service role key in a `VITE_` variable. `.env` is gitignored. The application runtime uses Supabase's API; direct Postgres connectivity is not required.
 3. Run `backend/sql/001_tenants.sql` once in the Supabase SQL Editor. This creates tenants, profiles, tenant state, RLS policies, the revision update function, and the Realtime publication. If it was already applied, do not run it again.
 4. Set `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` (at least 12 characters) in your local `.env`, then run `npm run db:bootstrap-admin` once.
@@ -25,6 +24,12 @@ The existing calculation and report services read one coherent `tenant_states.st
 6. Run `npm run dev` and open `http://localhost:3002`. Admin can create a factory owner and select that factory. Each factory owner signs in to their own workspace and sees only their factory's data.
 
 The legacy JSON file is deliberately excluded from Git. To import it, put the backup at `data/loom_db.json` (or set `IMPORT_FILE`), create a factory from the admin screen, then run `npm run db:import-json` with `IMPORT_TENANT_ID` set to the new factory UUID. Import refuses to overwrite a factory after its first write. Legacy plaintext demo users are removed from the imported snapshot.
+
+## Cloud deployment
+
+- **Vercel frontend:** connect this repository at its root, build with `npm ci --include=dev` and `npm run build`, and publish `dist/`. Set `VITE_API_URL` to the Render API origin, plus `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` for authenticated realtime updates.
+- **Render backend:** use `npm ci --include=dev` and `npm start`. Set `NODE_ENV=production`, `SERVE_FRONTEND=false`, `CORS_ORIGINS` to the exact Vercel site origin, and the Supabase URL, publishable key, and service-role key. Render supplies `PORT`; `/healthz` is the health endpoint. Keep the service-role key only on Render.
+- Configure `VITE_API_URL` in Vercel to the deployed Render service URL. Configure `CORS_ORIGINS` in Render to the deployed Vercel production URL. Redeploy both services after changing these values.
 
 ## Commands
 
