@@ -1,6 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { Prisma } from '@prisma/client';
-import { prisma } from './prisma';
+import { supabaseAdmin } from './supabase';
 import {
   AuditLog,
   DefaultAssignment,
@@ -140,7 +139,9 @@ class Database {
   }
 
   public async run<T>(tenantId: string, token: string, callback: () => T): Promise<T> {
-    const record = await prisma.tenantState.findUnique({ where: { tenantId } });
+    const { data: record, error } = await supabaseAdmin.from('tenant_states')
+      .select('tenant_id,state,revision').eq('tenant_id', tenantId).single();
+    if (error) throw new Error(`Tenant data unavailable: ${error.message}`);
     if (!record) throw new Error('Tenant data unavailable');
     const state = record.state as unknown as DatabaseSchema;
     state.worker_entries = (state.worker_entries || []).map((entry) => ({
@@ -154,11 +155,13 @@ class Database {
   public async persist(): Promise<boolean> {
     const ctx = this.context.getStore();
     if (!ctx || !ctx.dirty) return false;
-    const result = await prisma.tenantState.updateMany({
-      where: { tenantId: ctx.tenantId, revision: BigInt(ctx.revision) },
-      data: { state: ctx.data as unknown as Prisma.InputJsonValue, revision: { increment: 1 }, updatedAt: new Date() },
-    });
-    if (result.count !== 1) throw new Error('Tenant state revision conflict');
+    const { data, error } = await supabaseAdmin.from('tenant_states').update({
+      state: ctx.data as unknown as never,
+      revision: ctx.revision + 1,
+      updated_at: new Date().toISOString(),
+    }).eq('tenant_id', ctx.tenantId).eq('revision', ctx.revision).select('tenant_id').maybeSingle();
+    if (error) throw new Error(`Tenant state save failed: ${error.message}`);
+    if (!data) throw new Error('Tenant state revision conflict');
     ctx.revision += 1;
     ctx.dirty = false;
     return true;

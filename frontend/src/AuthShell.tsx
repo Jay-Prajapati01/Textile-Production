@@ -4,6 +4,7 @@ import App from './App';
 import { api, setCurrentUser } from './api/client';
 import { User } from './types';
 import { postSync } from './utils/sync';
+import { AdminPortal } from './components/AdminPortal';
 
 interface Tenant { id: string; name: string; email: string; is_active: boolean }
 const TOKEN = 'textile.accessToken';
@@ -32,9 +33,6 @@ export default function AuthShell() {
   const [error, setError] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [ownerEmail, setOwnerEmail] = useState('');
-  const [ownerPassword, setOwnerPassword] = useState('');
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -104,19 +102,6 @@ export default function AuthShell() {
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Sign in failed'); }
   }
 
-  async function createFactory(event: FormEvent) {
-    event.preventDefault(); setError('');
-    const response = await fetch('/api/admin/tenants', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem(TOKEN)}` },
-      body: JSON.stringify({ name, email: ownerEmail, password: ownerPassword }),
-    });
-    const result = await response.json();
-    if (!response.ok) { setError(result.error || 'Could not create factory'); return; }
-    setTenants((previous) => [...previous, result]);
-    chooseTenant(result.id);
-    setName(''); setOwnerEmail(''); setOwnerPassword('');
-  }
-
   function chooseTenant(id: string) {
     setSelected(id);
     localStorage.setItem(SELECTED, id);
@@ -142,16 +127,17 @@ export default function AuthShell() {
     {error && <p role="alert" className="text-red-400">{error}</p>}
     <button className="w-full rounded bg-white text-black p-2 font-semibold">Sign in</button>
   </form></main>;
-  if (user.role === 'admin' && !selected) return <main className="min-h-screen bg-slate-950 text-white p-6"><div className="max-w-3xl mx-auto space-y-8">
-    <div className="flex justify-between"><h1 className="text-2xl font-semibold">Factories</h1><button onClick={logout}>Sign out</button></div>
-    <div className="grid gap-2">{tenants.map((tenant) => <button key={tenant.id} disabled={!tenant.is_active} onClick={() => chooseTenant(tenant.id)} className="text-left p-4 rounded border border-slate-700 bg-slate-900">{tenant.name} · {tenant.email}</button>)}</div>
-    <form onSubmit={createFactory} className="space-y-3 rounded border border-slate-700 p-4"><h2 className="text-lg font-semibold">Create factory owner</h2>
-      <input className="w-full p-2 rounded bg-slate-800" placeholder="Factory name" value={name} onChange={(e) => setName(e.target.value)} required />
-      <input className="w-full p-2 rounded bg-slate-800" type="email" placeholder="Owner email" value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} required />
-      <input className="w-full p-2 rounded bg-slate-800" type="password" minLength={8} placeholder="Temporary password (8+ characters)" value={ownerPassword} onChange={(e) => setOwnerPassword(e.target.value)} required />
-      {error && <p role="alert" className="text-red-400">{error}</p>}
-      <button className="rounded bg-white text-black px-4 py-2">Create factory</button>
-    </form>
-  </div></main>;
+  if (user.role === 'admin' && !selected) return <>
+    <div className="flex flex-wrap items-center justify-end gap-4 bg-slate-950 text-white px-4 py-2 text-sm">
+      <span>{user.name}</span>{passwordNotice && <span role="status">{passwordNotice}</span>}
+      <button onClick={() => setShowPasswordForm((value) => !value)}>Change password</button>
+    </div>
+    {showPasswordForm && <form onSubmit={changePassword} className="flex flex-wrap items-end gap-2 bg-slate-900 text-white px-4 py-3 text-sm">
+      <label>Current password<input type="password" required value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="block p-2 rounded bg-slate-800" /></label>
+      <label>New password (12+ characters)<input type="password" minLength={12} required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="block p-2 rounded bg-slate-800" /></label>
+      <button className="rounded bg-white text-black px-4 py-2">Save password</button>
+    </form>}
+    <AdminPortal accessToken={accessToken} tenants={tenants} onTenantsChange={setTenants} onSelectFactory={chooseTenant} onLogout={logout} />
+  </>;
   return <><div className="flex items-center justify-end gap-4 bg-slate-950 text-white px-4 py-1 text-sm"><span>{user.name}{user.role === 'admin' ? ` · ${tenants.find((t) => t.id === selected)?.name || 'Factory'}` : ''}</span>{passwordNotice && <span role="status">{passwordNotice}</span>}<button onClick={() => setShowPasswordForm((value) => !value)}>Change password</button>{user.role === 'admin' && <button onClick={() => { setSelected(''); localStorage.removeItem(SELECTED); }}>Switch factory</button>}<button onClick={logout}>Sign out</button></div>{showPasswordForm && <form onSubmit={changePassword} className="flex flex-wrap items-end gap-2 bg-slate-900 text-white px-4 py-3 text-sm"><label>Current password<input type="password" required value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="block p-2 rounded bg-slate-800" /></label><label>New password (12+ characters)<input type="password" minLength={12} required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="block p-2 rounded bg-slate-800" /></label><button className="rounded bg-white text-black px-4 py-2">Save password</button></form>}<App key={selected} /></>;
 }
